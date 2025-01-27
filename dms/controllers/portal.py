@@ -71,7 +71,7 @@ class CustomerPortal(CustomerPortal):
         if search and search_in == "name":
             domain += OR([[], [("name", "ilike", search)]])
         # content according to pager and archive selected
-        items = request.env["dms.directory"].search(domain, order=sort_order)
+        items = request.env["dms.directory"].sudo().search(domain, order=sort_order)
         request.session["my_dms_folder_history"] = items.ids
         # values
         values.update(

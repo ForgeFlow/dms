@@ -80,7 +80,7 @@
                         <tr class="tr_dms_directory">
                             <td>
                                 <a
-                                    t-attf-href="/my/dms/directory/#{dms_directory.id}?{{ keep_query() }}"
+                                    t-att-href="dms_directory.get_portal_url()"
                                     t-attf-class="tr_dms_directory_link"
                                     t-att-title="dms_directory.name"
                                 >

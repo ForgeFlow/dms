@@ -6,6 +6,7 @@
 //  **********************************************************************************/
 import {Component, onWillUpdateProps} from "@odoo/owl";
 import {registry} from "@web/core/registry";
+import {_t} from "@web/core/l10n/translation";
 import {standardFieldProps} from "@web/views/fields/standard_field_props";
 import {useService} from "@web/core/utils/hooks";
 
@@ -42,7 +43,7 @@ DmsPathField.props = {
 
 const dmsPathField = {
     component: DmsPathField,
-    display_name: "Dms Path Field",
+    displayName: _t("Dms Path Field"),
     supportedTypes: ["text"],
     extractProps: () => {
         return {};
