@@ -6,7 +6,8 @@
 
 from logging import getLogger
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.odoo.exceptions import ValidationError
 from odoo.osv.expression import (
     FALSE_DOMAIN,
     NEGATIVE_TERM_OPERATORS,
@@ -21,6 +22,13 @@ _logger = getLogger(__name__)
 class DmsSecurityMixin(models.AbstractModel):
     _name = "dms.security.mixin"
     _description = "DMS Security Mixin"
+
+    _OPERATION_CONDITIONS = {
+        "create": "AND dag.perm_inclusive_create = TRUE",
+        "read": "",  # No additional condition for 'read'
+        "unlink": "AND dag.perm_inclusive_unlink = TRUE",
+        "write": "AND dag.perm_inclusive_write = TRUE",
+    }
 
     # Submodels must define this field that points to the owner dms.directory
     _directory_field = "directory_id"
@@ -156,15 +164,11 @@ class DmsSecurityMixin(models.AbstractModel):
     @api.model
     def _get_access_groups_query(self, operation):
         """Return the query to select access groups."""
-        operation_check = {
-            "create": "AND dag.perm_inclusive_create",
-            "read": "",
-            "unlink": "AND dag.perm_inclusive_unlink",
-            "write": "AND dag.perm_inclusive_write",
-        }[operation]
-        if operation == "read":
-            sql = SQL(
-                """(
+        # Strict validation
+        if operation not in self._OPERATION_CONDITIONS:
+            raise ValidationError(_(f"Invalid operation: {operation}"))
+
+        base_sql = """(
                 SELECT
                     dir_group_rel.aid
                 FROM
@@ -175,25 +179,28 @@ class DmsSecurityMixin(models.AbstractModel):
                         ON users.gid = dag.id
                 WHERE
                     users.uid = %s
-            )""",
+            )"""
+        if operation == "read":
+            sql = SQL(
+                base_sql,
                 self.env.uid,
             )
         else:
+            base_sql = f"""(
+                            SELECT
+                                dir_group_rel.aid
+                            FROM
+                                dms_directory_complete_groups_rel AS dir_group_rel
+                                INNER JOIN dms_access_group AS dag
+                                    ON dir_group_rel.gid = dag.id
+                                INNER JOIN dms_access_group_users_rel AS users
+                                    ON users.gid = dag.id
+                            WHERE
+                                users.uid = %s {self._OPERATION_CONDITIONS[operation]}
+                        )"""
             sql = SQL(
-                """(
-                SELECT
-                    dir_group_rel.aid
-                FROM
-                    dms_directory_complete_groups_rel AS dir_group_rel
-                    INNER JOIN dms_access_group AS dag
-                        ON dir_group_rel.gid = dag.id
-                    INNER JOIN dms_access_group_users_rel AS users
-                        ON users.gid = dag.id
-                WHERE
-                    users.uid = %s %s
-            )""",
+                base_sql,
                 self.env.uid,
-                operation_check,
             )
         return sql
 
