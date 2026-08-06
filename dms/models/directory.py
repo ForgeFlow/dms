@@ -646,10 +646,9 @@ class DmsDirectory(models.Model):
                 "directory_id": self.id,
                 "name": uname,
             }
-            try:
-                vals["content"] = base64.b64encode(attachment.content)
-            except Exception:
-                vals["content"] = attachment.content
+            if isinstance(contents_raw := attachment.content, str):
+                contents_raw = contents_raw.encode()
+            vals["content"] = base64.b64encode(contents_raw)
             self.env["dms.file"].sudo().create(vals)
             names.append(uname)
 
