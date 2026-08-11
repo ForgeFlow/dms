@@ -69,7 +69,7 @@ class CustomerPortal(CustomerPortal):
         )
         # search
         if search and search_in == "name":
-            domain += Domain.OR([[], [("name", "ilike", search)]])
+            domain &= Domain("name", "ilike", search)
         # content according to pager and archive selected
         items = request.env["dms.directory"].search(domain, order=sort_order)
         request.session["my_dms_folder_history"] = items.ids
