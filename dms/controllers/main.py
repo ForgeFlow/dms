@@ -4,7 +4,7 @@
 import json
 import unicodedata
 
-from odoo import _, http
+from odoo import http
 from odoo.exceptions import AccessError
 from odoo.http import request
 
@@ -12,7 +12,7 @@ from odoo.addons.web.controllers.binary import clean
 
 
 class OnboardingController(http.Controller):
-    @http.route("/config/dms.forbidden_extensions", type="json", auth="user")
+    @http.route("/config/dms.forbidden_extensions", type="jsonrpc", auth="user")
     def forbidden_extensions(self, **_kwargs):
         params = request.env["ir.config_parameter"].sudo()
         return {
@@ -49,9 +49,15 @@ class OnboardingController(http.Controller):
                     }
                 )
             except AccessError:
-                args.append({"error": _("You are not allowed to upload a file here.")})
+                args.append(
+                    {
+                        "error": request.env._(
+                            "You are not allowed to upload a file here."
+                        )
+                    }
+                )
             except Exception:
-                args.append({"error": _("Something horrible happened")})
+                args.append({"error": request.env._("Something horrible happened")})
             else:
                 args.append(
                     {

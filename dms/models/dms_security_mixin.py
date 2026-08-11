@@ -8,12 +8,7 @@ from logging import getLogger
 
 from odoo import api, fields, models
 from odoo.exceptions import AccessError
-from odoo.osv.expression import (
-    FALSE_DOMAIN,
-    NEGATIVE_TERM_OPERATORS,
-    OR,
-    TRUE_DOMAIN,
-)
+from odoo.fields import Domain
 from odoo.tools import SQL
 
 _logger = getLogger(__name__)
@@ -60,6 +55,8 @@ class DmsSecurityMixin(models.AbstractModel):
 
     @api.model
     def _get_ref_selection(self):
+        # All registered models are an intentional choice here.
+        # pylint: disable=no-search-all
         models = self.env["ir.model"].sudo().search([])
         return [(model.model, model.name) for model in models]
 
@@ -116,14 +113,14 @@ class DmsSecurityMixin(models.AbstractModel):
         ]
         domains = []
         # Get all used related records
-        related_groups = self.sudo().read_group(
+        related_groups = self.sudo()._read_group(
             domain=inherited_access_domain + [("res_model", "!=", False)],
-            fields=["res_id:array_agg"],
             groupby=["res_model"],
+            aggregates=["res_id:array_agg"],
         )
-        for group in related_groups:
+        for res_model, res_id_array in related_groups:
             try:
-                model = self.env[group["res_model"]]
+                model = self.env[res_model]
             except KeyError:
                 # The model might not be registered.
                 # This is normal if you are upgrading the database.
@@ -131,7 +128,7 @@ class DmsSecurityMixin(models.AbstractModel):
                 # These records will be accessible by DB users only.
                 domains.append(
                     [
-                        ("res_model", "=", group["res_model"]),
+                        ("res_model", "=", res_model),
                         (True, "=", self.env.user.has_group("base.group_user")),
                     ]
                 )
@@ -143,7 +140,7 @@ class DmsSecurityMixin(models.AbstractModel):
                 continue
             domains.append([("res_model", "=", model._name), ("res_id", "=", False)])
             # Check record access in batch too
-            res_ids = [i for i in group["res_id"] if i]  # Hack to remove None res_id
+            res_ids = [i for i in res_id_array if i]  # Hack to remove None res_id
             # Apply exists to skip records that do not exist. (e.g. a res.partner
             # deleted by database).
             model_records = model.browse(res_ids).exists()
@@ -153,8 +150,7 @@ class DmsSecurityMixin(models.AbstractModel):
             domains.append(
                 [("res_model", "=", model._name), ("res_id", "in", related_ok.ids)]
             )
-        result = inherited_access_domain + OR(domains)
-        return result
+        return Domain.AND([Domain(inherited_access_domain), Domain.OR(domains)])
 
     @api.model
     def _get_access_groups_query(self, operation):
@@ -203,28 +199,25 @@ class DmsSecurityMixin(models.AbstractModel):
     @api.model
     def _get_permission_domain(self, operator, value, operation):
         """Abstract logic for searching computed permission fields."""
-        _self = self
-        # HACK ir.rule domain is always computed with sudo, so if this check is
-        # true, we can assume safely that you're checking permissions
-        if self.env.su and value == self.env.uid:
-            _self = self.sudo(False)
-            value = bool(value)
-        # Tricky one, to know if you want to search
-        # positive or negative access
-        positive = (operator not in NEGATIVE_TERM_OPERATORS) == bool(value)
+        # The domain optimizer normalizes any value searched on these Boolean
+        # fields to [True], flipping the operator when needed, so the operator
+        # alone carries the polarity and `value` never reaches this method
+        # unnormalized. ir.rule domains are evaluated with su while env.uid
+        # stays the acting user; sudo(False) recovers that user, except for
+        # the real superuser, whose environment keeps su set.
+        _self = self.sudo(False) if self.env.su else self
+        positive = operator == "in"
         if _self.env.su:
-            # You're SUPERUSER_ID
-            return TRUE_DOMAIN if positive else FALSE_DOMAIN
-
-        result = OR(
+            return Domain.TRUE if positive else Domain.FALSE
+        result = Domain.OR(
             [
                 _self._get_domain_by_access_groups(operation),
                 _self._get_domain_by_inheritance(operation),
             ]
         )
-        if not positive:
-            result.insert(0, "!")
-        return result
+        # `determine_domain` dispatches negative operators straight to this
+        # search method, so `not in` must be negated here.
+        return result if positive else ~result
 
     @api.model
     def _search_permission_create(self, operator, value):
@@ -241,6 +234,13 @@ class DmsSecurityMixin(models.AbstractModel):
     @api.model
     def _search_permission_write(self, operator, value):
         return self._get_permission_domain(operator, value, "write")
+
+    def _can_return_content(self, field_name=None, access_token=None):
+        # Used to display the icon/preview in the portal: the user might not
+        # have access to the record, but the token makes it public.
+        if access_token and self.sudo().check_access_token(access_token):
+            return True
+        return super()._can_return_content(field_name, access_token)
 
     def filtered_domain(self, domain):
         """This method is needed to inhibit the behavior when called from the

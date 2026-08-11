@@ -7,14 +7,23 @@ from odoo.exceptions import UserError
 from odoo.tests.common import users
 from odoo.tools import mute_logger
 
-from .common import StorageDatabaseBaseCase
+from .common import StorageDatabaseBaseCase, read_test_asset
 
 
 class FileDatabaseTestCase(StorageDatabaseBaseCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.file_demo_01 = cls.env.ref("dms.file_01_demo")
+        cls.file_demo_01 = cls.create_file(
+            directory=cls.directory, content=read_test_asset("image01.jpg")
+        )
+        # A tag (with a category) so the search panel has a tag range to
+        # return — the panel query inner-joins dms.category.
+        cls.category = cls.category_model.create({"name": "Test Category"})
+        cls.tag = cls.tag_model.create(
+            {"name": "Test Tag", "category_id": cls.category.id}
+        )
+        cls.file.tag_ids = [(6, 0, [cls.tag.id])]
         cls.directory2 = cls.create_directory(storage=cls.storage)
         cls.new_storage2 = cls.create_storage(save_type="database")
         cls.directory3 = cls.create_directory(storage=cls.new_storage2)
@@ -68,7 +77,7 @@ class FileDatabaseTestCase(StorageDatabaseBaseCase):
     @users("dms-manager", "dms-user")
     def test_move_directory(self):
         with self.assertRaises(
-            UserError, msg="Directory can't have any parent, because it is " "root"
+            UserError, msg="Directory can't have any parent, because it is root"
         ):
             self.directory.write(
                 {

@@ -16,7 +16,7 @@ class OnboardingOnboardingStep(models.Model):
         """
         Open the form to create a new storage from the onboarding panel.
         """
-        return self.env.ref("dms.action_dms_storage_new").read()[0]
+        return self.env["ir.actions.actions"]._for_xml_id("dms.action_dms_storage_new")
 
     @api.model
     def action_open_documents_onboarding_directory(self):
@@ -24,7 +24,9 @@ class OnboardingOnboardingStep(models.Model):
         Open the form to create a new directory from the onboarding panel.
         """
         storage = self.env["dms.storage"].search([], order="create_date desc", limit=1)
-        action = self.env.ref("dms.action_dms_directory_new").read()[0]
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "dms.action_dms_directory_new"
+        )
         action["context"] = {
             **self.env.context,
             **{
@@ -42,7 +44,7 @@ class OnboardingOnboardingStep(models.Model):
         directory = self.env["dms.directory"].search(
             [], order="create_date desc", limit=1
         )
-        action = self.env.ref("dms.action_dms_file_new").read()[0]
+        action = self.env["ir.actions.actions"]._for_xml_id("dms.action_dms_file_new")
         action["context"] = {
             **self.env.context,
             **{"default_directory_id": directory and directory.id},

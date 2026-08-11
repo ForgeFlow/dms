@@ -6,6 +6,7 @@
 import base64
 import functools
 import logging
+import os
 import threading
 import time
 import uuid
@@ -13,6 +14,18 @@ import uuid
 from odoo.tests import Form, new_test_user
 
 from odoo.addons.base.tests.common import BaseCommon
+
+
+def read_test_asset(filename):
+    """Return the base64 content of a sample file under ``dms/test/``.
+
+    Lets tests build their own fixtures from real files instead of relying
+    on demo data (CI runs with ``with_demo=False``).
+    """
+    path = os.path.join(os.path.dirname(__file__), os.pardir, "test", filename)
+    with open(path, "rb") as fh:
+        return base64.b64encode(fh.read())
+
 
 _logger = logging.getLogger(__name__)
 

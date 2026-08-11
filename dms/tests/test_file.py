@@ -5,12 +5,12 @@
 
 import base64
 
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import new_test_user
 from odoo.tests.common import users
 from odoo.tools import mute_logger
 
-from .common import StorageFileBaseCase
+from .common import StorageFileBaseCase, read_test_asset
 
 try:
     import magic
@@ -105,6 +105,65 @@ class FileFilestoreTestCase(StorageFileBaseCase):
             msg="User A should see sub_directory_x",
         )
 
+    @users("user-a")
+    @mute_logger("odoo.addons.base.models.ir_rule", "odoo.models")
+    def test_record_level_access(self):
+        """Record-level access for the DMS access-group path: user-a is
+        granted on ``directory_group_a`` / ``sub_directory_x`` but not on the
+        inaccessible directory/file. Exercises ``check_access`` (read/write/
+        unlink) and a real ``create`` on both the allowed and denied side."""
+        # Include: granted records are reachable, and create is allowed where
+        # the access group grants it.
+        self.file2.with_user(self.env.user).check_access("read")
+        self.sub_directory_x.with_user(self.env.user).check_access("read")
+        self.file_model.with_user(self.env.user).create(
+            {
+                "name": "user-a allowed",
+                "directory_id": self.directory_group_a.id,
+                "content": self.content_base64(),
+            }
+        )
+        # Exclude: ungranted records raise for read/write/unlink...
+        forbidden_file = self.inaccessible_file.with_user(self.env.user)
+        for operation in ("read", "write", "unlink"):
+            with self.assertRaises(
+                AccessError, msg=f"user-a {operation} must be denied"
+            ):
+                forbidden_file.check_access(operation)
+        # ...and creating in an ungranted directory is denied.
+        with self.assertRaises(AccessError, msg="user-a create must be denied"):
+            self.file_model.with_user(self.env.user).create(
+                {
+                    "name": "user-a denied",
+                    "directory_id": self.inaccessible_directory.id,
+                    "content": self.content_base64(),
+                }
+            )
+
+    @users("user-a")
+    def test_permission_search_polarity(self):
+        """A negated permission search must be the complement of the positive
+        one: `not in` is dispatched straight to the search method, so the
+        domain has to be negated there."""
+        domain = [("storage_id", "=", self.storage.id)]
+        readable = self.file_model.with_user(self.env.user).search(
+            domain + [("permission_read", "=", True)]
+        )
+        self.assertIn(self.file2.id, readable.ids, msg="Granted file must match")
+        unreadable = self.file_model.with_user(self.env.user).search(
+            domain + [("permission_read", "=", False)]
+        )
+        self.assertNotIn(
+            self.file2.id,
+            unreadable.ids,
+            msg="A granted file must never match the complement search",
+        )
+        self.assertFalse(
+            unreadable,
+            msg="Read rules already restrict results to readable records, so "
+            "the complement search must come back empty",
+        )
+
     @users("dms-manager", "dms-user")
     @mute_logger("odoo.models.unlink")
     def test_content_file(self):
@@ -145,19 +204,27 @@ class FileFilestoreTestCase(StorageFileBaseCase):
         object_file.unlink()
 
     def test_content_file_mimetype(self):
-        file_svg = self.env.ref("dms.file_05_demo")
+        file_svg = self.create_file(
+            directory=self.directory, content=read_test_asset("vector.svg")
+        )
         self.assertEqual(file_svg.mimetype, "image/svg+xml", msg="SVG mimetype")
-        file_logo = self.env.ref("dms.file_02_demo")
+        file_logo = self.create_file(
+            directory=self.directory, content=read_test_asset("image02.jpg")
+        )
         self.assertEqual(file_logo.mimetype, "image/jpeg", msg="JPEG mimetype")
 
     def test_content_file_mimetype_magic_library(self):
         if not magic:
             self.skipTest("Without python-magic library installed")
-        file_video = self.env.ref("dms.file_10_demo")
+        file_video = self.create_file(
+            directory=self.directory, content=read_test_asset("video.mp4")
+        )
         self.assertEqual(file_video.mimetype, "video/mp4", msg="MP4 mimetype")
 
     def test_content_file_extension(self):
-        file_pdf = self.env.ref("dms.file_27_demo")
+        file_pdf = self.create_file(
+            directory=self.directory, content=read_test_asset("document01.pdf")
+        )
         self.assertEqual(file_pdf.extension, "pdf", msg="PDF extension")
         file_pdf.name = "Document_05"
         self.assertEqual(

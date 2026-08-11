@@ -12,17 +12,21 @@
     <record id="category_dms_security" model="ir.module.category">
         <field name="name">Documents</field>
     </record>
+    <record id="res_groups_privilege_dms" model="res.groups.privilege">
+        <field name="name">Documents</field>
+        <field name="category_id" ref="category_dms_security" />
+    </record>
     <record id="group_dms_user" model="res.groups">
         <field name="name">User</field>
-        <field name="category_id" ref="category_dms_security" />
+        <field name="privilege_id" ref="res_groups_privilege_dms" />
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]" />
     </record>
     <record id="group_dms_manager" model="res.groups">
         <field name="name">Manager</field>
         <field name="implied_ids" eval="[(4, ref('group_dms_user'))]" />
-        <field name="category_id" ref="category_dms_security" />
+        <field name="privilege_id" ref="res_groups_privilege_dms" />
         <field
-            name="users"
+            name="user_ids"
             eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"
         />
     </record>
@@ -116,7 +120,7 @@
         <field name="perm_create" eval="1" />
         <field name="perm_write" eval="0" />
         <field name="perm_unlink" eval="0" />
-        <field name="domain_force">[('permission_create', '=', user.id)]</field>
+        <field name="domain_force">[('permission_create', '=', True)]</field>
     </record>
     <record id="rule_directory_computed_read" model="ir.rule">
         <field name="name">Apply computed read permissions.</field>
@@ -126,7 +130,7 @@
         <field name="perm_create" eval="0" />
         <field name="perm_write" eval="0" />
         <field name="perm_unlink" eval="0" />
-        <field name="domain_force">[('permission_read', '=', user.id)]</field>
+        <field name="domain_force">[('permission_read', '=', True)]</field>
     </record>
     <record id="rule_directory_computed_unlink" model="ir.rule">
         <field name="name">Apply computed unlink permissions.</field>
@@ -136,7 +140,7 @@
         <field name="perm_create" eval="0" />
         <field name="perm_write" eval="0" />
         <field name="perm_unlink" eval="1" />
-        <field name="domain_force">[('permission_unlink', '=', user.id)]</field>
+        <field name="domain_force">[('permission_unlink', '=', True)]</field>
     </record>
     <record id="rule_directory_computed_write" model="ir.rule">
         <field name="name">Apply computed write permissions.</field>
@@ -146,7 +150,7 @@
         <field name="perm_create" eval="0" />
         <field name="perm_write" eval="1" />
         <field name="perm_unlink" eval="0" />
-        <field name="domain_force">[('permission_write', '=', user.id)]</field>
+        <field name="domain_force">[('permission_write', '=', True)]</field>
     </record>
     <record id="rule_file_computed_create" model="ir.rule">
         <field name="name">Apply computed create permissions.</field>
@@ -156,7 +160,7 @@
         <field name="perm_create" eval="1" />
         <field name="perm_write" eval="0" />
         <field name="perm_unlink" eval="0" />
-        <field name="domain_force">[('permission_create', '=', user.id)]</field>
+        <field name="domain_force">[('permission_create', '=', True)]</field>
     </record>
     <record id="rule_file_computed_read" model="ir.rule">
         <field name="name">Apply computed read permissions.</field>
@@ -166,7 +170,7 @@
         <field name="perm_create" eval="0" />
         <field name="perm_write" eval="0" />
         <field name="perm_unlink" eval="0" />
-        <field name="domain_force">[('permission_read', '=', user.id)]</field>
+        <field name="domain_force">[('permission_read', '=', True)]</field>
     </record>
     <record id="rule_file_computed_unlink" model="ir.rule">
         <field name="name">Apply computed unlink permissions.</field>
@@ -176,7 +180,7 @@
         <field name="perm_create" eval="0" />
         <field name="perm_write" eval="0" />
         <field name="perm_unlink" eval="1" />
-        <field name="domain_force">[('permission_unlink', '=', user.id)]</field>
+        <field name="domain_force">[('permission_unlink', '=', True)]</field>
     </record>
     <record id="rule_file_computed_write" model="ir.rule">
         <field name="name">Apply computed write permissions.</field>
@@ -186,6 +190,6 @@
         <field name="perm_create" eval="0" />
         <field name="perm_write" eval="1" />
         <field name="perm_unlink" eval="0" />
-        <field name="domain_force">[('permission_write', '=', user.id)]</field>
+        <field name="domain_force">[('permission_write', '=', True)]</field>
     </record>
 </odoo>
