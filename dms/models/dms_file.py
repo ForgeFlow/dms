@@ -264,7 +264,7 @@ class DMSFile(models.Model):
                 index += 1
             dms_file.write(
                 {
-                    "content": dms_file.with_context(**{}).content,
+                    "content": dms_file.with_context().content,
                     "storage_id": dms_file.directory_id.storage_id.id,
                 }
             )
@@ -533,8 +533,9 @@ class DMSFile(models.Model):
     @api.constrains("extension")
     def _check_extension(self):
         if self.filtered(
-            lambda rec: rec.extension
-            and rec.extension in self._get_forbidden_extensions()
+            lambda rec: (
+                rec.extension and rec.extension in self._get_forbidden_extensions()
+            )
         ):
             raise ValidationError(
                 self.env._("The file has a forbidden file extension.")

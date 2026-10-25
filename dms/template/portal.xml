@@ -11,7 +11,7 @@
         priority="20"
     >
         <div id="portal_common_category" position="after">
-            <div class="o_portal_category row g-2 mt-3" id="portal_dms_category">
+            <div id="portal_dms_category" class="o_portal_category row g-2 mt-3">
                 <t t-call="portal.portal_docs_entry">
                     <t t-set="title">Documents</t>
                     <t t-set="text">Manage your documents</t>
@@ -51,11 +51,11 @@
                                 t-attf-href="/my/dms/directory/#{dms_parent_category.id}?{{ keep_query() }}"
                                 t-att-title="dms_parent_category.name"
                             >
-                                <span t-esc="dms_parent_category.name" />
+                                <span t-out="dms_parent_category.name" />
                             </a>
                         </t>
                         <t t-else="">
-                            <span t-esc="dms_parent_category.name" />
+                            <span t-out="dms_parent_category.name" />
                         </t>
                     </li>
                 </t>
@@ -90,15 +90,15 @@
                                         class="o_portal_contact_img"
                                         t-att-src="dms_directory.icon_url"
                                     />
-                                    <span t-esc="dms_directory.name" />
+                                    <span t-out="dms_directory.name" />
                                 </a>
                             </td>
                             <td>
-                                <span t-esc="dms_directory.count_elements" /> element(s)
+                                <span t-out="dms_directory.count_elements" /> element(s)
                             </td>
                             <td>
                                 <span
-                                    t-esc="dms_directory.write_date"
+                                    t-out="dms_directory.write_date"
                                     t-options="{'widget': 'date'}"
                                 />
                             </td>
@@ -117,15 +117,15 @@
                                             class="o_portal_contact_img"
                                             t-att-src="dms_file.icon_url + (('&amp;access_token=' + access_token) if access_token else '')"
                                         />
-                                        <span t-esc="dms_file.name" />
+                                        <span t-out="dms_file.name" />
                                     </a>
                                 </td>
                                 <td>
-                                    <span t-esc="dms_file.get_human_size()" />
+                                    <span t-out="dms_file.get_human_size()" />
                                 </td>
                                 <td>
                                     <span
-                                        t-esc="dms_file.write_date"
+                                        t-out="dms_file.write_date"
                                         t-options="{'widget': 'date'}"
                                     />
                                 </td>

@@ -277,10 +277,10 @@
                             </div>
                             <div class="o_kanban_card_manage_actions row">
                                 <div
+                                    t-if="record.permission_write.raw_value"
+                                    class="col-6"
                                     role="menuitem"
                                     aria-haspopup="true"
-                                    class="col-6"
-                                    t-if="record.permission_write.raw_value"
                                 >
                                     <field name="color" widget="kanban_color_picker" />
                                 </div>

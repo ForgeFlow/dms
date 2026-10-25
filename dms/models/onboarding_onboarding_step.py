@@ -29,10 +29,8 @@ class OnboardingOnboardingStep(models.Model):
         )
         action["context"] = {
             **self.env.context,
-            **{
-                "default_is_root_directory": True,
-                "default_storage_id": storage and storage.id,
-            },
+            "default_is_root_directory": True,
+            "default_storage_id": storage and storage.id,
         }
         return action
 
@@ -47,6 +45,6 @@ class OnboardingOnboardingStep(models.Model):
         action = self.env["ir.actions.actions"]._for_xml_id("dms.action_dms_file_new")
         action["context"] = {
             **self.env.context,
-            **{"default_directory_id": directory and directory.id},
+            "default_directory_id": directory and directory.id,
         }
         return action

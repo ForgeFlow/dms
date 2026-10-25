@@ -201,10 +201,10 @@
                             </div>
                             <div class="o_kanban_card_manage_actions row">
                                 <div
+                                    t-if="record.permission_write.raw_value"
+                                    class="col-6"
                                     role="menuitem"
                                     aria-haspopup="true"
-                                    class="col-6"
-                                    t-if="record.permission_write.raw_value"
                                 >
                                     <field name="color" widget="kanban_color_picker" />
                                 </div>
@@ -218,9 +218,9 @@
                             >
                                 <div class="col-3">
                                     <a
+                                        t-att-id="record.id.raw_value"
                                         class="h-100 d-block o_kanban_dms_file_preview"
                                         t-att-data-id="record.id.raw_value"
-                                        t-att-id="record.id.raw_value"
                                         t-att-name="record.name.raw_value"
                                     >
                                         <img

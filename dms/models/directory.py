@@ -506,8 +506,9 @@ class DmsDirectory(models.Model):
     def _compute_tags(self):
         for record in self:
             tags = record.tag_ids.filtered(
-                lambda rec, record=record: not rec.category_id
-                or rec.category_id == record.category_id
+                lambda rec, record=record: (
+                    not rec.category_id or rec.category_id == record.category_id
+                )
             )
             record.tag_ids = tags
 
@@ -580,8 +581,9 @@ class DmsDirectory(models.Model):
                 children = record.sudo().parent_id.child_directory_ids
 
             if children.filtered(
-                lambda child, record=record: child.name == record.name
-                and child != record
+                lambda child, record=record: (
+                    child.name == record.name and child != record
+                )
             ):
                 raise ValidationError(
                     self.env._("A directory with the same name already exists.")
