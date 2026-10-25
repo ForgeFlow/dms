@@ -170,36 +170,14 @@ class FileFilestoreTestCase(StorageFileBaseCase):
         object_file = self.create_file(directory=self.directory)
         self.assertTrue(object_file.content, msg="Content is not empty")
         self.assertTrue(object_file.content_file, msg="Content file is not empty")
-        self.assertTrue(
-            object_file.with_context(bin_size=True).content,
-            msg="Content is not empty (with bin_size)",
-        )
-        self.assertTrue(
-            object_file.with_context(bin_size=True).content_file,
-            msg="Content file is not empty (with bin_size)",
-        )
-        self.assertTrue(
-            object_file.with_context(human_size=True).content_file,
-            msg="Content file is not empty (with human_size)",
-        )
-        self.assertTrue(
-            object_file.with_context(base64=True).content_file,
-            msg="Content file is not empty (with base64)",
-        )
-        self.assertTrue(
-            object_file.with_context(stream=True).content_file,
-            msg="Content file is not empty (with stream)",
-        )
-        oid = object_file.with_context(oid=True).content_file
-        self.assertTrue(oid, msg="Content file is not empty (with oid)")
-        object_file.with_context(show_content=True).write(
-            {"content": base64.b64encode(b"\xff new content")}
-        )
+        checksum = object_file.content_file.checksum
+        object_file.write({"content": base64.b64encode(b"\xff new content").decode()})
         self.assertNotEqual(
-            oid,
-            object_file.with_context(oid=True).content_file,
+            checksum,
+            object_file.content_file.checksum,
             msg="Content file has changed",
         )
+        self.assertEqual(object_file.content.content, b"\xff new content")
         self.assertTrue(object_file.export_data(["content"]))
         object_file.unlink()
 

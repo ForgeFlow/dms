@@ -11,7 +11,6 @@ class MailThread(models.AbstractModel):
         self, attachments, attachment_ids, message_values
     ):
         """Indicate to DMS that we're attaching a message to a record."""
-        self = self.with_context(attaching_to_record=True)
-        return super()._process_attachments_for_post(
-            attachments, attachment_ids, message_values
-        )
+        return super(
+            MailThread, self.with_context(attaching_to_record=True)
+        )._process_attachments_for_post(attachments, attachment_ids, message_values)

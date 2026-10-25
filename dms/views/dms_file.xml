@@ -71,13 +71,13 @@
                 <searchpanel>
                     <field
                         name="directory_id"
-                        icon="fa-folder"
+                        icon="folder"
                         limit="0"
                         enable_counters="1"
                     />
                     <field
                         name="category_id"
-                        icon="fa-users"
+                        icon="group"
                         limit="0"
                         enable_counters="1"
                     />
@@ -126,7 +126,7 @@
                                         t-if="record.permission_write.raw_value and !record.is_locked.raw_value"
                                     >
                                         <a name="lock" type="object">
-                                            <i class="fa fa-lock" />
+                                            <i class="oi" data-icon="lock" />
                                             Lock
                                         </a>
                                     </div>
@@ -135,7 +135,7 @@
                                         t-if="record.is_locked.raw_value  and record.is_lock_editor.raw_value"
                                     >
                                         <a name="unlock" type="object">
-                                            <i class="fa fa-unlock-alt" />
+                                            <i class="oi" data-icon="lock_open" />
                                             Unlock
                                         </a>
                                     </div>
@@ -144,7 +144,7 @@
                                         t-if="record.permission_write.raw_value and record.active.raw_value and (!record.is_locked.raw_value or (record.is_locked.raw_value and record.is_lock_editor.raw_value))"
                                     >
                                         <a name="toggle_active" type="object">
-                                            <i class="fa fa-archive" />
+                                            <i class="oi" data-icon="archive" />
                                             Archive
                                         </a>
                                     </div>
@@ -153,7 +153,7 @@
                                         t-if="record.permission_write.raw_value and !record.active.raw_value and (!record.is_locked.raw_value or (record.is_locked.raw_value and record.is_lock_editor.raw_value))"
                                     >
                                         <a name="toggle_active" type="object">
-                                            <i class="fa fa-archive" />
+                                            <i class="oi" data-icon="archive" />
                                             Unarchive
                                         </a>
                                     </div>
@@ -161,7 +161,7 @@
                                         <a
                                             t-attf-href="/web/content?id=#{record.id.raw_value}&amp;field=content&amp;model=dms.file&amp;filename_field=name&amp;download=true"
                                         >
-                                            <i class="fa fa-download" />
+                                            <i class="oi" data-icon="download" />
                                             Download
                                         </a>
                                     </div>
@@ -175,7 +175,7 @@
                                     </h5>
                                     <div role="menuitem">
                                         <a type="open">
-                                            <i class="fa fa-external-link" />
+                                            <i class="oi" data-icon="open_in_new" />
                                             Open
                                         </a>
                                     </div>
@@ -184,7 +184,7 @@
                                         t-if="record.permission_write.raw_value"
                                     >
                                         <a type="edit">
-                                            <i class="fa fa-pencil-square-o" />
+                                            <i class="oi" data-icon="edit_square" />
                                             Edit
                                         </a>
                                     </div>
@@ -193,7 +193,7 @@
                                         t-if="record.permission_unlink.raw_value and (!record.is_locked.raw_value or (record.is_locked.raw_value and record.is_lock_editor.raw_value))"
                                     >
                                         <a type="delete">
-                                            <i class="fa fa-trash-o" />
+                                            <i class="oi" data-icon="delete" />
                                             Delete
                                         </a>
                                     </div>
@@ -246,7 +246,8 @@
                                             class="o_dms_file_kanban_lock"
                                         >
                                             <i
-                                                t-attf-class="fa #{(record.is_locked.raw_value and !record.is_lock_editor.raw_value) ? 'fa-lock' : ''} #{((record.is_locked.raw_value and record.is_lock_editor.raw_value)) ? 'fa-unlock-alt' : ''}"
+                                                class="oi"
+                                                t-att-data-icon="record.is_lock_editor.raw_value ? 'lock_open' : 'lock'"
                                                 t-att-title="record.locked_by.value"
                                             />
                                         </span>
@@ -270,7 +271,7 @@
         <field name="name">dms_file.kanban.wizard.selection</field>
         <field name="model">dms.file</field>
         <field name="inherit_id" ref="dms.view_dms_file_kanban" />
-        <field name="priority">9999</field>
+        <field name="priority" eval="9999" />
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <kanban position="attributes">
@@ -535,13 +536,13 @@
                 <searchpanel>
                     <field
                         name="directory_id"
-                        icon="fa-folder"
+                        icon="folder"
                         limit="0"
                         enable_counters="1"
                     />
                     <field
                         name="category_id"
-                        icon="fa-users"
+                        icon="group"
                         limit="0"
                         enable_counters="1"
                     />

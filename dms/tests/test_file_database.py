@@ -123,18 +123,11 @@ class FileDatabaseTestCase(StorageDatabaseBaseCase):
 
     @users("dms-manager", "dms-user")
     def test_compute_content(self):
-        self.assertTrue(
-            self.file.with_context(bin_size=True).content,
-            "Content should be computed (with bin_size)",
-        )
-        self.assertTrue(
-            self.file.with_context(bin_size=False).content,
-            "Content should be computed (without bin_size)",
-        )
-        self.assertNotEqual(
-            self.file.with_context(bin_size=False).content,
-            self.file.with_context(bin_size=True).content,
-            "Content should be different",
+        self.assertTrue(self.file.content, "Content should be computed")
+        self.assertEqual(
+            self.file.content.content,
+            self.file.content_binary.content,
+            "Content should be the stored binary",
         )
 
     @users("dms-manager", "dms-user")

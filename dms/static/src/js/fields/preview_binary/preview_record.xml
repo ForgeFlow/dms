@@ -27,12 +27,13 @@
                     'video/webm'
                 ]"
             />
-            <t t-if="readable_types.includes(props.record.data.mimetype)">
+            <t t-if="readable_types.includes(this.props.record.data.mimetype)">
                 <button
-                    class="btn btn-secondary fa fa-search preview_file"
+                    class="oi btn btn-secondary preview_file"
+                    data-icon="search"
                     data-tooltip="Preview"
                     aria-label="Preview"
-                    t-on-click="onFilePreview"
+                    t-on-click="this.onFilePreview"
                 />
             </t>
         </xpath>

@@ -47,19 +47,19 @@
                                 <div name="card_menu_view">
                                     <div role="menuitem">
                                         <a type="open">
-                                            <i class="fa fa-external-link" />
+                                            <i class="oi" data-icon="open_in_new" />
                                             Open
                                         </a>
                                     </div>
                                     <div role="menuitem">
                                         <a type="edit">
-                                            <i class="fa fa-pencil-square-o" />
+                                            <i class="oi" data-icon="edit_square" />
                                             Edit
                                         </a>
                                     </div>
                                     <div role="menuitem">
                                         <a type="delete">
-                                            <i class="fa fa-trash-o" />
+                                            <i class="oi" data-icon="delete" />
                                             Delete
                                         </a>
                                     </div>

@@ -24,7 +24,7 @@ def read_test_asset(filename):
     """
     path = os.path.join(os.path.dirname(__file__), os.pardir, "test", filename)
     with open(path, "rb") as fh:
-        return base64.b64encode(fh.read())
+        return base64.b64encode(fh.read()).decode()
 
 
 _logger = logging.getLogger(__name__)
@@ -90,6 +90,9 @@ def track_function(
 
 
 class DocumentsBaseCase(BaseCommon):
+    # The tests switch explicitly to the DMS users they need
+    _test_user_groups = ()
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -125,7 +128,7 @@ class DocumentsBaseCase(BaseCommon):
 
     @classmethod
     def content_base64(cls):
-        return base64.b64encode(b"\xff data")
+        return base64.b64encode(b"\xff data").decode()
 
     @classmethod
     def create_storage(cls, save_type="database"):
@@ -166,7 +169,7 @@ class DocumentsBaseCase(BaseCommon):
                 "name": name,
                 "res_model": res_model,
                 "res_id": res_id,
-                "datas": content or cls.content_base64(),
+                "raw": content or cls.content_base64(),
             }
         )
 

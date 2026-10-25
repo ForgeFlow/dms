@@ -10,8 +10,8 @@
         t-inherit-mode="primary"
     >
         <xpath expr="//div[hasclass('o_kanban_renderer')]" position="before">
-            <div t-if="dragState.showDragZone" class="o_dropzone">
-                <i class="fa fa-cloud-upload fa-10x" />
+            <div t-if="this.dragState.showDragZone" class="o_dropzone">
+                <i class="oi" data-icon="cloud_upload" style="--oi-font-size: 10em" />
             </div>
         </xpath>
     </t>
@@ -27,11 +27,11 @@
                 role="toolbar"
                 aria-label="DMS file actions"
             >
-                <t t-if="props.archInfo.activeActions.create">
+                <t t-if="this.props.archInfo.activeActions.create">
                     <button
                         type="button"
                         class="d-inline d-md-none btn btn-primary mx-1"
-                        t-on-click.prevent="uploadDocument"
+                        t-on-click.prevent="this.uploadDocument"
                     >
                         Scan
                     </button>
@@ -39,15 +39,15 @@
                         type="file"
                         name="ufile"
                         class="d-none"
-                        t-ref="fileInput"
+                        t-ref="this.fileInput"
                         multiple="1"
                         accept="*"
-                        t-on-change="onChangeFileInput"
+                        t-on-change="this.onChangeFileInput"
                     />
                     <button
                         type="button"
                         class="d-none d-md-inline btn btn-primary mx-1"
-                        t-on-click.prevent="uploadDocument"
+                        t-on-click.prevent="this.uploadDocument"
                     >
                         Upload
                     </button>

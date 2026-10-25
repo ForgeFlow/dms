@@ -30,7 +30,6 @@ class Storage(models.Model):
     )
     company_id = fields.Many2one(
         comodel_name="res.company",
-        string="Company",
         default=lambda self: self.env.company,
         help="If set, directories and files will only be available for "
         "the selected company.",
@@ -130,5 +129,5 @@ class Storage(models.Model):
     def write(self, values):
         res = super().write(values)
         if "model_ids" in values:
-            self.env.registry.clear_cache()
+            self.env.transaction.invalidate_ormcache()
         return res

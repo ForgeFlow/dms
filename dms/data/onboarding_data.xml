@@ -15,7 +15,7 @@
         >action_open_documents_onboarding_storage</field>
         <field
             name="step_image"
-            type="base64"
+            type="bytes"
             file="base/static/img/onboarding_default.png"
         />
         <field name="step_image_filename">onboarding_default.png</field>
@@ -33,7 +33,7 @@
         >action_open_documents_onboarding_directory</field>
         <field
             name="step_image"
-            type="base64"
+            type="bytes"
             file="base/static/img/onboarding_default.png"
         />
         <field name="step_image_filename">onboarding_default.png</field>
@@ -51,7 +51,7 @@
         >action_open_documents_onboarding_file</field>
         <field
             name="step_image"
-            type="base64"
+            type="bytes"
             file="base/static/img/onboarding_default.png"
         />
         <field name="step_image_filename">onboarding_default.png</field>

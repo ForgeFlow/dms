@@ -3,7 +3,6 @@
 # Copyright 2021-2022 Tecnativa - Víctor Martínez
 # Copyright 2024 Subteno - Timothée Vannier (https://www.subteno.com).
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
-import base64
 import os
 
 from odoo import Command
@@ -295,7 +294,7 @@ class DirectoryMailTestCase(StorageDatabaseBaseCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.params = cls.env["ir.config_parameter"].sudo()
-        cls.params.set_param("mail.catchall.domain", "dmstest.com")
+        cls.params.set_str("mail.catchall.domain", "dmstest.com")
         cls.domain = cls.env["mail.alias.domain"].create({"name": "dmstest.com"})
         cls.alias = cls.env["mail.alias"].create(
             {
@@ -313,10 +312,10 @@ class DirectoryMailTestCase(StorageDatabaseBaseCase):
             self.env["mail.thread"].message_process(None, file.read())
         with open(os.path.join(_path, "tests", "data", "mail02.eml")) as file:
             self.env["mail.thread"].message_process(None, file.read())
-        # Check file created from mail02.eml further, ensure we can decode b64 contents.
+        # Check file created from mail02.eml further: the content is decoded.
         dms_file = self.env["dms.file"].search([], limit=1, order="id desc")
         self.assertEqual(dms_file.name, "bookmarks-really-short.html")
-        self.assertNotEqual(base64.b64decode(dms_file.content), dms_file.content)
+        self.assertIn(b"<", dms_file.content.content)
 
     @mute_logger("odoo.addons.mail.mail_thread")
     def test_mail_alias_directory(self):

@@ -16,8 +16,6 @@ registry.category("web_tour.tours").add("dms_portal_mail_tour", {
         {
             content: "Mail_01.eml is reachable",
             trigger: ".tr_dms_file_link:contains('Mail_01.eml')",
-            // eslint-disable-next-line no-empty-function
-            run() {},
         },
     ],
 });
@@ -40,8 +38,6 @@ registry.category("web_tour.tours").add("dms_portal_partners_tour", {
         {
             content: "test.txt is reachable",
             trigger: ".tr_dms_file_link:contains('test.txt')",
-            // eslint-disable-next-line no-empty-function
-            run() {},
         },
     ],
 });

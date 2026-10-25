@@ -3,39 +3,21 @@
 //     License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 //  **********************************************************************************/
 
+import {proxy, signal, useListener} from "@odoo/owl";
 import {useBus, useService} from "@web/core/utils/hooks";
-import {useEffect, useRef, useState} from "@odoo/owl";
 import {_t} from "@web/core/l10n/translation";
 
 export function createFileDropZoneExtension() {
     return {
         setup() {
             super.setup(...arguments);
-            this.dragState = useState({
+            this.dragState = proxy({
                 showDragZone: false,
             });
-            this.root = useRef("root");
-
-            useEffect(
-                (el) => {
-                    if (!el) {
-                        return;
-                    }
-                    const highlight = this.highlight.bind(this);
-                    const unhighlight = this.unhighlight.bind(this);
-                    const drop = this.onDrop.bind(this);
-                    el.addEventListener("dragover", highlight);
-                    el.addEventListener("dragleave", unhighlight);
-                    el.addEventListener("drop", drop);
-                    return () => {
-                        el.removeEventListener("dragover", highlight);
-                        el.removeEventListener("dragleave", unhighlight);
-                        el.removeEventListener("drop", drop);
-                    };
-                },
-
-                () => [document.querySelector(".o_content")]
-            );
+            // The drop zone is the root of the renderer (its rootRef)
+            useListener(this.rootRef, "dragover", this.highlight.bind(this));
+            useListener(this.rootRef, "dragleave", this.unhighlight.bind(this));
+            useListener(this.rootRef, "drop", this.onDrop.bind(this));
         },
 
         highlight(ev) {
@@ -67,16 +49,16 @@ export function createFileUploadExtension() {
             this.notification = useService("notification");
             this.orm = useService("orm");
             this.http = useService("http");
-            this.fileInput = useRef("fileInput");
+            this.fileInput = signal.ref();
 
             useBus(this.env.bus, "change_file_input", async (ev) => {
-                this.fileInput.el.files = ev.detail.files;
+                this.fileInput().files = ev.detail.files;
                 await this.onChangeFileInput();
             });
         },
 
         uploadDocument() {
-            this.fileInput.el.click();
+            this.fileInput().click();
         },
 
         async onChangeFileInput() {
@@ -106,7 +88,7 @@ export function createFileUploadExtension() {
 
             const params = {
                 csrf_token: odoo.csrf_token,
-                ufile: [...this.fileInput.el.files],
+                ufile: [...this.fileInput().files],
                 directory_id: directory_id,
             };
 

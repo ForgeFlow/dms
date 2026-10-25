@@ -72,7 +72,7 @@ class DmsSecurityMixin(models.AbstractModel):
         Get permissions for the current record.
         """
 
-        # Update according to presence when applying ir.rule
+        # Update according to presence when applying the access domain
         self.invalidate_recordset()
         if self.env.su:
             self.update(
@@ -126,12 +126,8 @@ class DmsSecurityMixin(models.AbstractModel):
                 # This is normal if you are upgrading the database.
                 # Otherwise, you probably have garbage DMS data.
                 # These records will be accessible by DB users only.
-                domains.append(
-                    [
-                        ("res_model", "=", res_model),
-                        (True, "=", self.env.user.has_group("base.group_user")),
-                    ]
-                )
+                if self.env.user.has_group("base.group_user"):
+                    domains.append([("res_model", "=", res_model)])
                 continue
             # Check model access only once per batch
             try:
@@ -202,7 +198,7 @@ class DmsSecurityMixin(models.AbstractModel):
         # The domain optimizer normalizes any value searched on these Boolean
         # fields to [True], flipping the operator when needed, so the operator
         # alone carries the polarity and `value` never reaches this method
-        # unnormalized. ir.rule domains are evaluated with su while env.uid
+        # unnormalized. access domains are evaluated with su while env.uid
         # stays the acting user; sudo(False) recovers that user, except for
         # the real superuser, whose environment keeps su set.
         _self = self.sudo(False) if self.env.su else self
@@ -242,49 +238,24 @@ class DmsSecurityMixin(models.AbstractModel):
             return True
         return super()._can_return_content(field_name, access_token)
 
-    def filtered_domain(self, domain):
-        """This method is needed to inhibit the behavior when called from the
-        _check_access() method with sudo() https://github.com/odoo/odoo/blob/fc737a147b9aefbd6ae5d111835ce3f4f7b4240a/odoo/models.py#L4465.
-        It would cause the error that multiple records are not accessed to be
-        displayed.
-        The _filtered_access() method is also overwritten to prevent this sudo()
-        specific behavior and to be able to access only the appropriate records.
+    def _access_domain(self, operation):
+        """Restrict the access with the DMS permissions.
+
+        The permissions computed from the DMS access groups and from the
+        records the files are attached to depend on data that changes at any
+        time, so they cannot be part of the (cached) domain of the ``ir.access``
+        records: they are added here, after the cached domain.
         """
-        if self.env.su:
-            return self
-        return super().filtered_domain(domain)
+        domain = super()._access_domain(operation)
+        if self.env.su or domain.is_false():
+            return domain
+        return domain & self._get_permission_domain("in", True, operation)
 
-    def _filtered_access_no_recursion(self, operation: str):
-        """This method is just the same as _filtered_access
-        but it can not be called withoud super due to
-        recursion error.
-        """
-        if self and not self.env.su and (result := self._check_access(operation)):
-            return self - result[0]
-        return self
-
-    def _filtered_access(self, operation):
-        # Only kept to not break inheritance; see next comment
-        result = super()._filtered_access(operation)
-        # HACK Always fall back to applying rules by SQL.
-        # Upstream `_filtered_access()` doesn't use computed fields
-        # search methods. Thus, it will take the `[('permission_{operation}',
-        # '=', user.id)]` rule literally. Obviously that will always fail
-        # because `self[f"permission_{operation}"]` will always be a `bool`,
-        # while `user.id` will always be an `int`.
-        result |= self._filtered_access_no_recursion(operation)
-        return result
-
-    def _check_access_dms_record(self, operation: str) -> tuple | None:
-        """Specific method "similar" to _check_access() but with a different
-        behavior: check if you do not really have access to any of the records
-        in to avoid performing the corresponding create/write/unlink action."""
+    def _check_access_dms_record(self, operation: str) -> None:
+        """Check the access on the records once the DMS access groups are
+        stored (records are created in sudo, see ``create``)."""
         if any(self._ids) and not self.env.su:
-            Rule = self.env["ir.rule"]
-            domain = Rule._compute_domain(self._name, operation)
-            items = self.with_context(active_test=False).search(domain)
-            if any(x_id not in items.ids for x_id in self.ids):
-                raise Rule._make_access_error(operation, (self - items))
+            self.check_access(operation)
 
     @api.model_create_multi
     def create(self, vals_list):

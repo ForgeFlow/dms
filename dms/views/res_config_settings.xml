@@ -37,7 +37,7 @@
                                 string="Storages"
                                 type="action"
                                 class="oe_link"
-                                icon="fa-arrow-right"
+                                icon="arrow_forward"
                             />
                         </setting>
                     </block>

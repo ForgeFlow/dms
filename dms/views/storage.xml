@@ -131,7 +131,7 @@
                         type="action"
                         name="%(dms.action_dms_directories_storage)d"
                         class="oe_stat_button"
-                        icon="fa-folder-open-o"
+                        icon="folder_open"
                     >
                         <field
                             string="Directories"
@@ -143,7 +143,7 @@
                         type="action"
                         name="%(dms.action_dms_files_storage)d"
                         class="oe_stat_button"
-                        icon="fa-file-text-o"
+                        icon="description"
                     >
                         <field
                             string="Files"

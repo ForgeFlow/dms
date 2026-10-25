@@ -1,13 +1,13 @@
 # Copyright 2017-2019 MuK IT GmbH
 # Copyright 2026 Tecnativa - Víctor Martínez
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
-import base64
 import json
 import unicodedata
 
 from odoo import http
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
+from odoo.tools.binary import BinaryBytes
 
 from odoo.addons.web.controllers.binary import clean
 
@@ -16,11 +16,7 @@ class OnboardingController(http.Controller):
     @http.route("/config/dms.forbidden_extensions", type="jsonrpc", auth="user")
     def forbidden_extensions(self, **_kwargs):
         params = request.env["ir.config_parameter"].sudo()
-        return {
-            "forbidden_extensions": params.get_param(
-                "dms.forbidden_extensions", default=""
-            )
-        }
+        return {"forbidden_extensions": params.get_str("dms.forbidden_extensions")}
 
     @http.route("/web/binary/upload_dms_file", type="http", auth="user")
     def upload_dms_file(self, ufile, directory_id, callback=None):
@@ -35,19 +31,19 @@ class OnboardingController(http.Controller):
                     win.jQuery(win).trigger(%s, %s);
                 </script>"""
         args = []
-        for ufile in files:
-            filename = ufile.filename
+        for upload in files:
+            filename = upload.filename
             if request.httprequest.user_agent.browser == "safari":
                 # Safari sends NFD UTF-8 (where é is composed by 'e' and [accent])
                 # we need to send it the same stuff, otherwise it'll fail
-                filename = unicodedata.normalize("NFD", ufile.filename)
+                filename = unicodedata.normalize("NFD", filename)
             try:
                 with request.env.cr.savepoint():
                     dms_file = Model.create(
                         {
                             "directory_id": directory_id,
                             "name": filename,
-                            "content": base64.b64encode(ufile.read()),
+                            "content": BinaryBytes(upload.read()),
                         }
                     )
                     dms_file.flush_recordset()
@@ -61,7 +57,7 @@ class OnboardingController(http.Controller):
                 )
             except ValidationError as error:
                 args.append({"error": error.args[0]})
-            except Exception:
+            except Exception:  # noqa: BLE001
                 args.append({"error": request.env._("Something horrible happened")})
             else:
                 args.append(

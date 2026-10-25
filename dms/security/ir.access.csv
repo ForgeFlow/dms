@@ -1,0 +1,24 @@
+id,name,model_id,group_id/id,operation,domain
+access_dms_tag_user,dms_tag_user,dms.tag,group_dms_user,crud,
+access_dms_category_user,dms_category_user,dms.category,group_dms_user,crud,
+access_dms_storage_base_user,Basic users cannot access hidden storage,dms.storage,base.group_user,r,"[('is_hidden', '=', False)]"
+access_dms_storage_portal,Portal users cannot access hidden storage,dms.storage,base.group_portal,r,"[('is_hidden', '=', False)]"
+access_dms_storage_manager,Managers can access all storages,dms.storage,group_dms_manager,crud,
+rule_multi_company_storage,DMS Storage multi-company,dms.storage,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_dms_directory_portal,dms_directory_portal,dms.directory,base.group_portal,r,
+access_dms_directory_base_user,dms_directory_base_user,dms.directory,base.group_user,r,
+access_dms_directory_user,dms_directory_user,dms.directory,group_dms_user,crud,
+rule_multi_company_directory,DMS Directory multi-company,dms.directory,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_dms_file_portal,dms_file_portal,dms.file,base.group_portal,r,
+access_dms_file_base_user,dms_file_base_user,dms.file,base.group_user,r,
+access_dms_file_user,dms_file_user,dms.file,group_dms_user,crud,
+rule_multi_company_file,File multi-company,dms.file,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+rule_file_locked,Locked files are only modified by locker user.,dms.file,,cud,"['|', ('locked_by', '=', False), ('locked_by', '=', user.id)]"
+access_dms_access_group_public,access_dms_access_group_public,dms.access.group,base.group_public,r,
+access_dms_access_group_portal,access_dms_access_group_portal,dms.access.group,base.group_portal,r,
+access_security_access_groups_user,access_security_access_groups_user,dms.access.group,base.group_user,r,
+access_security_access_groups_dms_user,access_security_access_groups_dms_user,dms.access.group,group_dms_user,cr,
+rule_security_groups_user,DMS users can only edit and delete their own groups.,dms.access.group,group_dms_user,ud,"[('create_uid', '=', user.id)]"
+rule_security_groups_manager,DMS Managers can edit and delete all groups.,dms.access.group,group_dms_manager,ud,
+access_wizard_dms_file_move,access_wizard_dms_file_move,wizard.dms.file.move,group_dms_user,crud,
+access_wizard_dms_share,access_wizard_dms_share,wizard.dms.share,group_dms_manager,cru,

@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <form>
                 <div class="alert alert-warning" role="alert">
-                    <i class="fa fa-exclamation-triangle mr-3" title="Warning" />
+                    <i class="oi mr-3" data-icon="warning" title="Warning" />
                     <b>ATTENTION:</b> Tips to keep in mind before moving files:<br />
                     - This change cannot be undone.<br />
                     - Remember that the permissions of the files are those of the folder that contains it, therefore, it is possible that when you change it, the permissions will also change.<br

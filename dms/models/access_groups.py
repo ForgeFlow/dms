@@ -63,7 +63,6 @@ class DmsAccessGroups(models.Model):
     count_directories = fields.Integer(compute="_compute_count_directories")
     parent_group_id = fields.Many2one(
         comodel_name="dms.access.group",
-        string="Parent Group",
         ondelete="cascade",
         index="btree",
     )
@@ -147,14 +146,15 @@ class DmsAccessGroups(models.Model):
         "parent_group_id.users",
         "parent_group_id.users.active",
         "group_ids",
-        "group_ids.user_ids",
-        "group_ids.user_ids.active",
+        "group_ids.all_user_ids",
+        "group_ids.all_user_ids.active",
         "explicit_user_ids",
     )
     def _compute_users(self):
         for record in self:
+            # The users of the groups and of the groups implying them
             users = (
-                record.group_ids.user_ids
+                record.group_ids.all_user_ids
                 | record.explicit_user_ids
                 | record.parent_group_id.users
             )

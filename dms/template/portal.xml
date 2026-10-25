@@ -5,27 +5,6 @@
 -->
 <odoo>
     <template
-        id="portal_my_home_dms"
-        name="Portal My Home : dms entries"
-        inherit_id="portal.portal_my_home"
-        priority="20"
-    >
-        <div id="portal_common_category" position="after">
-            <div id="portal_dms_category" class="o_portal_category row g-2 mt-3">
-                <t t-call="portal.portal_docs_entry">
-                    <t t-set="title">Documents</t>
-                    <t t-set="text">Manage your documents</t>
-                    <t t-set="url" t-value="'/my/dms'" />
-                    <t
-                        t-set="icon"
-                        t-value="'/dms/static/description/portal_icon.svg'"
-                    />
-                    <t t-set="placeholder_count" t-value="'dms_directory_count'" />
-                </t>
-            </div>
-        </div>
-    </template>
-    <template
         id="portal_my_dms_breadcrumbs"
         name="My DMS: Breadcrumbs"
         inherit_id="portal.portal_breadcrumbs"
@@ -63,8 +42,7 @@
         </xpath>
     </template>
     <template id="portal_my_dms" name="My DMS">
-        <t t-call="portal.portal_layout">
-            <t t-set="breadcrumbs_searchbar" t-value="True" />
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
             <t t-call="portal.portal_searchbar" />
             <t t-if="not dms_directories and not dms_files">
                 <div class="alert alert-warning mt8" role="alert">Not results</div>
