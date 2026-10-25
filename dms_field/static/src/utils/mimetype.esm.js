@@ -1,12 +1,12 @@
 var mapping = [
-    ["file-image-o", /^image\//],
-    ["file-audio-o", /^audio\//],
-    ["file-video-o", /^video\//],
-    ["file-pdf-o", "application/pdf"],
-    ["file-text-o", "text/plain"],
-    ["file-code-o", ["text/html", "text/javascript", "application/javascript"]],
+    ["image", /^image\//],
+    ["audio_file", /^audio\//],
+    ["video_file", /^video\//],
+    ["picture_as_pdf", "application/pdf"],
+    ["article", "text/plain"],
+    ["code", ["text/html", "text/javascript", "application/javascript"]],
     [
-        "file-archive-o",
+        "folder_zip",
         [
             /^application\/x-(g?tar|xz|compress|bzip2|g?zip)$/,
             /^application\/x-(7z|rar|zip)-compressed$/,
@@ -14,7 +14,7 @@ var mapping = [
         ],
     ],
     [
-        "file-word-o",
+        "description",
         [
             /ms-?word/,
             "application/vnd.oasis.opendocument.text",
@@ -22,20 +22,20 @@ var mapping = [
         ],
     ],
     [
-        "file-powerpoint-o",
+        "slideshow",
         [
             /ms-?powerpoint/,
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         ],
     ],
     [
-        "file-excel-o",
+        "table_chart",
         [
             /ms-?excel/,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         ],
     ],
-    ["file-o"],
+    ["description"],
 ];
 
 function match(mimetype, cond) {

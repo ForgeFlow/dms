@@ -4,11 +4,13 @@ import {
     Component,
     onMounted,
     onWillStart,
-    useEffect,
-    useRef,
-    useState,
+    proxy,
+    signal,
+    useListener,
+    useProps,
 } from "@odoo/owl";
-import {loadBundle, loadCSS, loadJS} from "@web/core/assets";
+import {loadCSS, loadJS} from "@web/core/assets";
+import {useLayoutEffect} from "@web/owl2/utils";
 import {FormViewDialog} from "@web/views/view_dialogs/form_view_dialog";
 import {_t} from "@web/core/l10n/translation";
 import {download} from "@web/core/network/download";
@@ -16,42 +18,27 @@ import {useFileViewer} from "@web/core/file_viewer/file_viewer_hook";
 import {useService} from "@web/core/utils/hooks";
 
 export class DmsListRenderer extends Component {
+    props = useProps();
+
     setup() {
-        this.js_tree = useRef("jstree");
-        this.extra_actions = useRef("extra_actions");
-        this.dms_add_directory = useRef("dms_add_directory");
-        this.nodeSelectedState = useState({data: {}});
+        this.js_tree = signal.ref();
+        this.extra_actions = signal.ref();
+        this.dms_add_directory = signal.ref();
+        this.nodeSelectedState = proxy({data: {}});
         this.store = useService("mail.store");
         this.fileViewer = useFileViewer();
         this.notification = useService("notification");
         this.dialog = useService("dialog");
-        this.dragState = useState({
+        this.ui = useService("ui");
+        this.dragState = proxy({
             showDragZone: false,
         });
-        this.dropZone = useRef("dropZone");
-
-        useEffect(
-            (el) => {
-                if (!el) {
-                    return;
-                }
-                const highlight = this.highlight.bind(this);
-                const unhighlight = this.unhighlight.bind(this);
-                const drop = this.onDrop.bind(this);
-                el.addEventListener("dragover", highlight);
-                el.addEventListener("dragleave", unhighlight);
-                el.addEventListener("drop", drop);
-                return () => {
-                    el.removeEventListener("dragover", highlight);
-                    el.removeEventListener("dragleave", unhighlight);
-                    el.removeEventListener("drop", drop);
-                };
-            },
-
-            () => [this.dropZone.el]
-        );
+        this.dropZone = signal.ref();
+        useListener(this.dropZone, "dragover", this.highlight.bind(this));
+        useListener(this.dropZone, "dragleave", this.unhighlight.bind(this));
+        useListener(this.dropZone, "drop", this.onDrop.bind(this));
         onWillStart(async () => {
-            await loadBundle("web._assets_jquery");
+            await loadJS("/dms_field/static/lib/jquery/jquery.js");
             await loadJS("/dms_field/static/lib/jsTree/jstree.js");
             await loadCSS("/dms_field/static/lib/jsTree/themes/proton/style.css");
             this.config = this.buildTreeConfig();
@@ -64,9 +51,9 @@ export class DmsListRenderer extends Component {
             this.$ = window.jQuery;
         });
         onMounted(() => {
-            this.$tree = this.$(this.js_tree.el);
+            this.$tree = this.$(this.js_tree());
         });
-        useEffect(
+        useLayoutEffect(
             () => {
                 this.nodeSelectedState.data = {};
                 this.updatePreview({});
@@ -126,12 +113,12 @@ export class DmsListRenderer extends Component {
     startTreeTriggers() {
         this.$tree.on("open_node.jstree", (e, data) => {
             if (data.node.data && data.node.data.resModel === "dms.directory") {
-                data.instance.set_icon(data.node, "fa fa-folder-open-o");
+                data.instance.set_icon(data.node, "oi o_dms_oi_folder_open");
             }
         });
         this.$tree.on("close_node.jstree", (e, data) => {
             if (data.node.data && data.node.data.resModel === "dms.directory") {
-                data.instance.set_icon(data.node, "fa fa-folder-o");
+                data.instance.set_icon(data.node, "oi o_dms_oi_folder");
             }
         });
         this.$tree.on("changed.jstree", (e, data) => {
@@ -167,7 +154,7 @@ export class DmsListRenderer extends Component {
     }
 
     updatePreview(node) {
-        var $buttons = this.$(this.extra_actions.el);
+        var $buttons = this.$(this.extra_actions());
         $buttons.empty();
         if (
             node.data &&
@@ -202,7 +189,7 @@ export class DmsListRenderer extends Component {
         menu.rename = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-pencil",
+            icon: "oi o_dms_oi_edit",
             label: _t("Rename"),
             action: () => {
                 $jstree.edit(node);
@@ -214,14 +201,14 @@ export class DmsListRenderer extends Component {
         menu.action = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-bolt",
+            icon: "oi o_dms_oi_flash_on",
             label: _t("Actions"),
             action: false,
             submenu: {
                 cut: {
                     separator_before: false,
                     separator_after: false,
-                    icon: "fa fa-scissors",
+                    icon: "oi o_dms_oi_content_cut",
                     label: _t("Cut"),
                     action: () => {
                         $jstree.cut(node);
@@ -238,7 +225,7 @@ export class DmsListRenderer extends Component {
         menu.delete = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-trash-o",
+            icon: "oi o_dms_oi_delete",
             label: _t("Delete"),
             action: () => {
                 $jstree.delete_node(node);
@@ -250,7 +237,7 @@ export class DmsListRenderer extends Component {
         menu.open = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-external-link",
+            icon: "oi o_dms_oi_open_in_new",
             label: _t("Open"),
             action: () => {
                 this.onDMSOpenRecord(node);
@@ -263,7 +250,7 @@ export class DmsListRenderer extends Component {
         menu.add_directory = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-folder",
+            icon: "oi o_dms_oi_folder",
             label: _t("Create directory"),
             action: () => {
                 this.onDMSAddDirectory(node);
@@ -275,7 +262,7 @@ export class DmsListRenderer extends Component {
         menu.add_file = {
             separator_before: false,
             separator_after: true,
-            icon: "fa fa-file",
+            icon: "oi o_dms_oi_description",
             label: _t("Create File"),
             action: () => {
                 this.onDMSAddFile(node);
@@ -292,7 +279,7 @@ export class DmsListRenderer extends Component {
             menu.action.submenu.paste = {
                 separator_before: false,
                 separator_after: false,
-                icon: "fa fa-clipboard",
+                icon: "oi o_dms_oi_content_paste",
                 label: _t("Paste"),
                 action: () => {
                     $jstree.paste(node);
@@ -309,7 +296,7 @@ export class DmsListRenderer extends Component {
         menu.preview = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-eye",
+            icon: "oi o_dms_oi_visibility",
             label: _t("Preview"),
             action: () => {
                 this.onDMSPreviewFile(node);
@@ -318,7 +305,7 @@ export class DmsListRenderer extends Component {
         menu.download = {
             separator_before: false,
             separator_after: false,
-            icon: "fa fa-download",
+            icon: "oi o_dms_oi_download",
             label: _t("Download"),
             action: () => {
                 download({
@@ -367,9 +354,9 @@ export class DmsListRenderer extends Component {
         result.then((data) => {
             callback.call(this, data);
             if (empty_storages.length > 0) {
-                this.$(this.dms_add_directory.el).removeClass("o_hidden");
+                this.$(this.dms_add_directory()).removeClass("o_hidden");
             } else {
-                this.$(this.dms_add_directory.el).addClass("o_hidden");
+                this.$(this.dms_add_directory()).addClass("o_hidden");
             }
         });
     }
@@ -473,7 +460,7 @@ export class DmsListRenderer extends Component {
     onDMSAddDirectoryRecord() {
         this.props.rendererActions.onDMSCreateEmptyStorages().then(() => {
             this.$tree.jstree(true).refresh();
-            this.$(this.dms_add_directory.el).addClass("o_hidden");
+            this.$(this.dms_add_directory()).addClass("o_hidden");
         });
     }
     onDMSOpenRecord(node) {

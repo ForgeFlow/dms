@@ -25,7 +25,7 @@ class DmsStorage(models.Model):
         return {
             "id": f"storage_{storage.id}",
             "text": storage.name,
-            "icon": "fa fa-database",
+            "icon": "oi o_dms_oi_database",
             "type": "storage",
             "data": {"odoo_id": storage.id, "odoo_model": "dms.storage"},
             "children": storage_directories,
@@ -44,6 +44,7 @@ class DmsStorage(models.Model):
                 [
                     ("storage_id", "=", storage.id),
                     ("is_root_directory", "=", True),
+                    ("res_model", "!=", False),
                     (
                         "res_model",
                         "not in",

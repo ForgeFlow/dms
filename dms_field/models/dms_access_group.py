@@ -17,7 +17,6 @@ class DmsAccessGroups(models.Model):
     company_id = fields.Many2one(
         compute="_compute_company_id",
         comodel_name="res.company",
-        string="Company",
         store=True,
     )
 

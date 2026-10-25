@@ -3,9 +3,8 @@
 
 {
     "name": "DMS Field",
-    "summary": """
-        Create DMS View and allow to use them inside a record""",
-    "version": "19.0.1.0.0",
+    "summary": "Create DMS View and allow to use them inside a record",
+    "version": "20.0.1.0.0",
     "license": "LGPL-3",
     "author": "Creu Blanca,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/dms",
@@ -15,8 +14,7 @@
         "views/dms_directory.xml",
         "views/dms_field_template_views.xml",
         "views/dms_storage.xml",
-        "security/ir.model.access.csv",
-        "security/security.xml",
+        "security/ir.access.csv",
         "data/assets.xml",
     ],
     "assets": {

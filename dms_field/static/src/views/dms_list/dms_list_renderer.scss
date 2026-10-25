@@ -87,3 +87,21 @@
         margin-left: 2px;
     }
 }
+
+// Odoo 20 icons (Material Symbols) for the nodes and the context menu of
+// jsTree, which can only set classes on its icons
+$o-dms-icons:
+    article, audio_file, code, content_cut, content_paste, database, delete,
+    description, download, edit, flash_on, folder, folder_open, folder_zip, image,
+    open_in_new, picture_as_pdf, slideshow, table_chart, video_file, visibility;
+@each $icon in $o-dms-icons {
+    .oi.o_dms_oi_#{$icon}::before {
+        content: "#{$icon}";
+    }
+}
+.dms_tree .jstree-themeicon-custom.oi,
+.vakata-context .oi {
+    background: none;
+    font-size: 1.2em;
+    line-height: inherit;
+}

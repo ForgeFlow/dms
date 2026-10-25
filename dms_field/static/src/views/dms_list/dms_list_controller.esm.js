@@ -1,17 +1,28 @@
 /* Copyright 2024 Tecnativa - Carlos Roca
  * License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl). */
 
-import {Component, onRendered} from "@odoo/owl";
-import {Deferred} from "@web/core/utils/concurrency";
+import {Component, useProps} from "@odoo/owl";
 import {Domain} from "@web/core/domain";
+import {onWillRender} from "@web/owl2/utils";
 import {Layout} from "@web/search/layout";
 import {extractFieldsFromArchInfo} from "@web/model/relational_model/utils";
 import {formatBinarySize} from "../../utils/format_binary_size.esm";
 import {mimetype2fa} from "../../utils/mimetype.esm";
 import {patch} from "@web/core/utils/patch";
-import {session} from "@web/session";
+import {user} from "@web/core/user";
 import {useModelWithSampleData} from "@web/model/model";
 import {useService} from "@web/core/utils/hooks";
+
+/**
+ * A promise that can be resolved from outside (Deferred was removed from
+ * @web/core/utils/concurrency in 20.0).
+ *
+ * @returns {Promise}
+ */
+function makeDeferred() {
+    const {promise, resolve, reject} = Promise.withResolvers();
+    return Object.assign(promise, {resolve, reject});
+}
 
 export function getDMSListControllerObject() {
     return {
@@ -33,7 +44,7 @@ export function getDMSListControllerObject() {
                 onDMSDeleteNode: this.onDMSDeleteNode.bind(this),
                 onDMSDroppedFile: this.onDMSDroppedFile.bind(this),
             };
-            onRendered(() => {
+            onWillRender(() => {
                 this.processProps();
             });
         },
@@ -99,17 +110,17 @@ export function getDMSListControllerObject() {
             this.params = {
                 storage: {
                     domain: storage_domain,
-                    context: session.user_context,
+                    context: user.context,
                     show: show_storage,
                 },
                 directory: {
                     domain: directory_domain,
-                    context: session.user_context,
+                    context: user.context,
                     autocompute_directory: autocompute_directory,
                 },
                 file: {
                     domain: [],
-                    context: session.user_context,
+                    context: user.context,
                     show: true,
                 },
             };
@@ -127,13 +138,13 @@ export function getDMSListControllerObject() {
         },
         loadInitialData(args) {
             var self = this;
-            var data_loaded = new Deferred();
+            var data_loaded = makeDeferred();
             this.empty_storages = [];
             this.loadStorages(args).then((storages) => {
                 var loading_data_parts = [];
                 storages.forEach((storage, index) => {
                     if (storage.count_storage_directories > 0) {
-                        const directory_loaded = new Deferred();
+                        const directory_loaded = makeDeferred();
                         loading_data_parts.push(directory_loaded);
                         this.loadDirectoriesSingle(storage.id, args).then(
                             (directories) => {
@@ -196,7 +207,7 @@ export function getDMSListControllerObject() {
             return data_loaded;
         },
         loadNode(node, args) {
-            var result = new Deferred();
+            var result = makeDeferred();
             if (node.data && node.data.resModel === "dms.storage") {
                 this.loadDirectoriesSingle(node.data.data.id, args).then(
                     function (directories) {
@@ -207,8 +218,8 @@ export function getDMSListControllerObject() {
                     }.bind(this)
                 );
             } else if (node.data && node.data.resModel === "dms.directory") {
-                var files_loaded = new Deferred();
-                var directories_loaded = new Deferred();
+                var files_loaded = makeDeferred();
+                var directories_loaded = makeDeferred();
                 this.loadSubdirectoriesSingle(node.data.data.id, args).then(
                     function (directories) {
                         var directory_nodes = directories.map((directory) =>
@@ -271,7 +282,7 @@ export function getDMSListControllerObject() {
             var directoryNode = {
                 id: dt.id,
                 text: directory.name,
-                icon: "fa fa-folder-o",
+                icon: "oi o_dms_oi_folder",
                 type: "directory",
                 data: dt,
             };
@@ -305,7 +316,7 @@ export function getDMSListControllerObject() {
             return {
                 id: dt.id,
                 text: dt.data.display_name,
-                icon: mimetype2fa(dt.data.mimetype, {prefix: "fa fa-"}),
+                icon: mimetype2fa(dt.data.mimetype, {prefix: "oi o_dms_oi_"}),
                 type: "file",
                 data: dt,
             };
@@ -318,7 +329,7 @@ export function getDMSListControllerObject() {
             return {
                 id: "storage_" + storage.id,
                 text: storage.name,
-                icon: "fa fa-database",
+                icon: "oi o_dms_oi_database",
                 type: "storage",
                 data: dt,
                 children: children,
@@ -350,7 +361,7 @@ export function getDMSListControllerObject() {
                     args.directory.domain,
                     args.directory.autocompute_directory
                 ),
-                context: args.directory.context || session.user_context,
+                context: args.directory.context || user.context,
             });
         },
         loadDirectoriesSingle(storage_id, args) {
@@ -382,7 +393,7 @@ export function getDMSListControllerObject() {
                 ]),
             ];
             return this.orm.searchRead("dms.directory", domain, fields, {
-                context: args.file.context || session.user_context,
+                context: args.file.context || user.context,
             });
         },
         loadSubdirectoriesSingle(directory_id, args) {
@@ -412,7 +423,7 @@ export function getDMSListControllerObject() {
                 ]),
             ];
             return this.orm.searchRead("dms.file", domain, fields, {
-                context: args.file.context || session.user_context,
+                context: args.file.context || user.context,
             });
         },
         loadFilesSingle(directory_id, args) {
@@ -431,7 +442,7 @@ export function getDMSListControllerObject() {
                 args.storage.domain || [],
                 fields,
                 {
-                    context: args.storage.context || session.user_context,
+                    context: args.storage.context || user.context,
                 }
             );
         },
@@ -506,7 +517,9 @@ export function getDMSListControllerObject() {
     };
 }
 
-export class DmsListController extends Component {}
+export class DmsListController extends Component {
+    props = useProps();
+}
 patch(DmsListController.prototype, getDMSListControllerObject());
 DmsListController.template = "dms_field.View";
 DmsListController.components = {Layout};

@@ -13,7 +13,7 @@ class IrUiView(models.Model):
 
     def _get_view_info(self):
         res = super()._get_view_info()
-        res["dms_list"] = {"icon": "fa fa-file-o"}
+        res["dms_list"] = {"icon": "account_tree"}
         return res
 
     def _postprocess_tag_dms_list(self, node, name_manager, node_info):
@@ -39,9 +39,7 @@ class IrUiView(models.Model):
                         node,
                     )
                 model = self.env[model_name]
-                model_groups &= self.env["ir.model.access"]._get_access_groups(
-                    model_name
-                )
+                model_groups &= self._get_access_groups(group_definitions, model_name)
                 new_name_manager = NameManager(
                     model, parent=name_manager, model_groups=model_groups
                 )

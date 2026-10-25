@@ -2,7 +2,6 @@
 # Copyright 2024 Tecnativa - Víctor Martínez
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
-from odoo import fields
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests import new_test_user
 from odoo.tools import mute_logger
@@ -11,13 +10,16 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestDmsField(BaseCommon):
+    # The tests switch explicitly to the users they need
+    _test_user_groups = ()
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.env = cls.env(context=dict(cls.env.context, test_dms_field=True))
         cls.user_a = new_test_user(cls.env, login="test-user-a")
         cls.group = cls.env["res.groups"].create(
-            {"name": "Test group", "users": [(4, cls.user_a.id)]}
+            {"name": "Test group", "user_ids": [(4, cls.user_a.id)]}
         )
         cls.user_b = new_test_user(cls.env, login="test-user-b")
         cls.template = cls.env.ref("dms_field.field_template_partner")
@@ -162,9 +164,9 @@ class TestDmsField(BaseCommon):
 
     def test_creation_process_01_with_parent(self):
         self.assertFalse(self.partner.dms_directory_ids)
-        self.template.parent_directory_id = fields.first(
-            self.template.storage_id.root_directory_ids
-        )
+        self.template.parent_directory_id = self.template.storage_id.root_directory_ids[
+            :1
+        ]
         template = self.env["dms.field.template"].with_context(
             res_model=self.partner._name, res_id=self.partner.id
         )
@@ -197,9 +199,9 @@ class TestDmsField(BaseCommon):
         self.assertFalse(partner_2.dms_directory_ids)
 
     def test_creation_process_02_with_parent(self):
-        self.template.parent_directory_id = fields.first(
-            self.template.storage_id.root_directory_ids
-        )
+        self.template.parent_directory_id = self.template.storage_id.root_directory_ids[
+            :1
+        ]
         partner_1 = self.env["res.partner"].create({"name": "Test partner 1"})
         partner_1.invalidate_model()
         directory_1 = partner_1.dms_directory_ids[0]

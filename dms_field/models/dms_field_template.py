@@ -13,14 +13,12 @@ class DmsFieldTemplate(models.Model):
     name = fields.Char(required=True)
     company_id = fields.Many2one(
         comodel_name="res.company",
-        string="Company",
         store=True,
         index=True,
     )
     storage_id = fields.Many2one(
         comodel_name="dms.storage",
         domain=[("save_type", "!=", "attachment")],
-        string="Storage",
     )
     parent_directory_id = fields.Many2one(
         comodel_name="dms.directory",
@@ -29,7 +27,6 @@ class DmsFieldTemplate(models.Model):
     )
     model_id = fields.Many2one(
         comodel_name="ir.model",
-        string="Model",
         domain=[("transient", "=", False), ("model", "!=", "dms.field.template")],
         index=True,
     )
