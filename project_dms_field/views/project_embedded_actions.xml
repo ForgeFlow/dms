@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 ForgeFlow S.L. (https://www.forgeflow.com)
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="project_embedded_action_dms_documents" model="ir.embedded.actions">
+        <field name="parent_res_model">project.project</field>
+        <field name="sequence" eval="45" />
+        <field name="name">Documents</field>
+        <field
+            name="parent_action_id"
+            ref="project.act_project_project_2_project_task_all"
+        />
+        <field name="python_method">action_open_dms_documents</field>
+        <field name="context">{"from_embedded_action": true}</field>
+        <field name="groups_ids" eval="[(4, ref('dms.group_dms_user'))]" />
+    </record>
+    <record
+        id="project_embedded_action_dms_documents_dashboard"
+        model="ir.embedded.actions"
+    >
+        <field name="parent_res_model">project.project</field>
+        <field name="sequence" eval="45" />
+        <field name="name">Documents</field>
+        <field name="parent_action_id" ref="project.project_update_all_action" />
+        <field name="python_method">action_open_dms_documents</field>
+        <field name="context">{"from_embedded_action": true}</field>
+        <field name="groups_ids" eval="[(4, ref('dms.group_dms_user'))]" />
+    </record>
+</odoo>

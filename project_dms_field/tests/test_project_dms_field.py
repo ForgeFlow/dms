@@ -1,6 +1,7 @@
 # Copyright 2026 Windweaver
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from odoo.exceptions import UserError
 from odoo.tests import new_test_user
 from odoo.tools import mute_logger
 
@@ -94,3 +95,57 @@ class TestProjectDmsField(BaseCommon):
         project.unlink()
         self.assertFalse(directory.exists())
         self.assertFalse(group_custom.exists())
+
+    def test_action_open_dms_documents(self):
+        project = self.project_model.create({"name": "Test project"})
+        project.invalidate_model()
+        directory = project.dms_directory_ids
+        action = project.action_open_dms_documents()
+        self.assertEqual(action["res_model"], "dms.file")
+        self.assertIn(("directory_id", "child_of", directory.id), action["domain"])
+        self.assertEqual(action["context"]["project_dms_directory_id"], directory.id)
+        self.assertEqual(action["context"]["default_directory_id"], directory.id)
+        # Only the files of the folders of the project
+        subdirectory = directory.child_directory_ids[:1]
+        own_file = self.env["dms.file"].create(
+            {"name": "own.txt", "directory_id": subdirectory.id, "content": "YQ=="}
+        )
+        other = self.project_model.create({"name": "Other project"})
+        other.invalidate_model()
+        other_file = self.env["dms.file"].create(
+            {
+                "name": "other.txt",
+                "directory_id": other.dms_directory_ids.id,
+                "content": "Yg==",
+            }
+        )
+        files = self.env["dms.file"].search(action["domain"])
+        self.assertIn(own_file, files)
+        self.assertNotIn(other_file, files)
+        # The search panel offers the folders of the project only
+        panel = (
+            self.env["dms.file"]
+            .with_context(**action["context"])
+            .search_panel_select_range("directory_id")
+        )
+        panel_values = {value["id"]: value for value in panel["values"]}
+        self.assertIn(subdirectory.id, panel_values)
+        self.assertFalse(panel_values[subdirectory.id]["parent_id"])
+        self.assertNotIn(directory.id, panel_values)
+        self.assertNotIn(other.dms_directory_ids.id, panel_values)
+
+    def test_action_open_dms_documents_without_folder(self):
+        project = self.project_model.with_context(
+            skip_track_dms_field_template=True
+        ).create({"name": "Project without folder"})
+        with self.assertRaises(UserError):
+            project.action_open_dms_documents()
+
+    def test_embedded_actions(self):
+        for xmlid in (
+            "project_dms_field.project_embedded_action_dms_documents",
+            "project_dms_field.project_embedded_action_dms_documents_dashboard",
+        ):
+            embedded = self.env.ref(xmlid)
+            self.assertEqual(embedded.python_method, "action_open_dms_documents")
+            self.assertIn(self.env.ref("dms.group_dms_user"), embedded.groups_ids)
