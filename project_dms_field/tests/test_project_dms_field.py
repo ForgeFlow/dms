@@ -8,6 +8,9 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestProjectDmsField(BaseCommon):
+    # The tests switch explicitly to the users they need
+    _test_user_groups = ()
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -61,7 +64,7 @@ class TestProjectDmsField(BaseCommon):
         self.assertIn(self.user, group_custom.explicit_user_ids)
 
     def test_project_write_user(self):
-        project = self.project_model.create({"name": "Test project"})
+        project = self.project_model.create({"name": "Test project", "user_id": False})
         project.invalidate_recordset()
         directory = project.dms_directory_ids
         self.assertEqual(len(directory), 1)

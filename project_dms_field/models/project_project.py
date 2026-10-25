@@ -6,4 +6,4 @@ from odoo import models
 
 class ProjectProject(models.Model):
     _name = "project.project"
-    _inherit = ["project.project", "dms.field.mixin"]
+    _inherit = ("project.project", "dms.field.mixin")

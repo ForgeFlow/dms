@@ -3,7 +3,7 @@
 
 {
     "name": "Add dms field for projects",
-    "version": "18.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Project",
     "website": "https://github.com/OCA/dms",
     "author": "Windweaver, Odoo Community Association (OCA)",
