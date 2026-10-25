@@ -42,9 +42,7 @@ class DmsDirectory(models.Model):
                 limit=1,
             ):
                 raise ValidationError(
-                    self.env._(
-                        "This record is already related in this storage"
-                    )
+                    self.env._("This record is already related in this storage")
                 )
 
     @api.model

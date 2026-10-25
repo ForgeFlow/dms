@@ -64,7 +64,5 @@ class DmsStorage(models.Model):
                 ]
             ):
                 raise ValidationError(
-                    self.env._(
-                        "There are directories not associated to a record"
-                    )
+                    self.env._("There are directories not associated to a record")
                 )

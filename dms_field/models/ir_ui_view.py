@@ -35,9 +35,7 @@ class IrUiView(models.Model):
                 model_name = field.comodel_name
                 if model_name not in self.env:
                     self._raise_view_error(
-                        self.env._(
-                            "Model not found: %(model)s", model=model_name
-                        ),
+                        self.env._("Model not found: %(model)s", model=model_name),
                         node,
                     )
                 model = self.env[model_name]

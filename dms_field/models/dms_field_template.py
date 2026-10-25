@@ -218,7 +218,5 @@ class DmsFieldTemplate(models.Model):
                 [("model_id", "=", template.model_id.id), ("id", "!=", template.id)]
             ):
                 raise UserError(
-                    self.env._(
-                        "There is already a template created for this model."
-                    )
+                    self.env._("There is already a template created for this model.")
                 )
